@@ -1,0 +1,4 @@
+create table IF NOT EXISTS TABLEANME
+create database IF NOT EXISTS DATABASENAME
+drop table IF EXISTS TABLENAME
+drop database IF EXISTS DATABASENAME
