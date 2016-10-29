@@ -15,6 +15,7 @@ import (
 )
 
 var StockDB *sql.DB
+var StockInMemDB map[string][]Stock
 
 type prefixError struct {
 	Code  int
@@ -57,11 +58,16 @@ func getStockSuffix(code string) (string, error) {
 
 func PrintStock(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, "Hello, world\n")
-	io.WriteString(w, DumpAllStock("shenzhen"))
-	io.WriteString(w, DumpAllStock("shanghai"))
 }
 
 func PrintTest(w http.ResponseWriter, req *http.Request) {
+	tmpl, err := template.ParseFiles("index.tmpl")
+	checkError(err)
+
+	tmpl.Execute(w, tmpl)
+}
+
+func StockList(w http.ResponseWriter, req *http.Request) {
 	tmpl, err := template.ParseFiles("index.tmpl")
 	checkError(err)
 
@@ -97,31 +103,43 @@ func PrintMain(w http.ResponseWriter, req *http.Request) {
 	t.Execute(w, nil)
 }
 
-func DumpAllStock(market string) string {
+func ShowStockList(w http.ResponseWriter, req *http.Request) {
+	fmt.Println(req.URL)
+	t, err := template.ParseFiles("stock.tmpl")
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
+	List, _ := StockInMemDB["shanghai"]
+	t.Execute(w, List)
+}
+
+func DumpAllStock(market string) []Stock {
 	allStock, err := StockDB.Query("select * from " + market)
 	defer allStock.Close()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	var all string
+	stockList := make([]Stock, 0, 1000)
 
-	var stock Stock
 	for allStock.Next() {
+		var stock Stock
 		if err := allStock.Scan(&stock.StockCode, &stock.ShortName, &stock.TypeACode, &stock.TypeAOnSaleDate, &stock.TypeAOnSaleDate, &stock.TypeATotalValue, &stock.TypeACirculationValue); err != nil {
-
+			log.Println(err.Error())
+			continue
 		}
 
 		//		log.Println(stock)
-		all += fmt.Sprintf("%v", stock)
 		if err := allStock.Err(); err != nil {
 			log.Println("Rows error: ", err.Error(), " happend")
 			continue
 		}
-
+		stockList = append(stockList, stock)
 	}
 
-	return all
+	return stockList
 }
 
 func main() {
@@ -130,6 +148,7 @@ func main() {
 	http.HandleFunc("/static/js/", GetJS)
 	http.HandleFunc("/static/fonts", GetStatic)
 	http.HandleFunc("/static/favicons", GetStatic)
+	http.HandleFunc("/stock", ShowStockList)
 	http.HandleFunc("/", PrintMain)
 	http.ListenAndServe(":1234", nil)
 	//	DumpAllStock("shanghai")
@@ -138,6 +157,9 @@ func main() {
 
 func init() {
 	StockDB, _ = sql.Open("mysql", "kkkmmu:leeweop@/stock?charset=utf8")
+	StockInMemDB = make(map[string][]Stock, 2)
+	StockInMemDB["shenzhen"] = DumpAllStock("shenzhen")
+	StockInMemDB["shanghai"] = DumpAllStock("shanghai")
 }
 
 func checkError(err error) {
