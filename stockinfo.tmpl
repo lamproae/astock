@@ -4,13 +4,13 @@
         <title>Money House</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-            <link rel="stylesheet" href="static/css/bootstrap.min.css">
-            <script src="/static/js/jquery.min.js"></script>
-            <script src="/static/js/bootstrap.min.js"></script>
-            <script src="/static/js/echarts.min.js"></script>
-<!--
+        <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+        <script src="/static/js/jquery.min.js"></script>
+        <script src="/static/js/bootstrap.min.js"></script>
+        <script src="/static/js/echarts.min.js"></script>
+        <!--
             <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">  
-            
+
             <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
             <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
             <style>
@@ -23,7 +23,7 @@
     z-index: 0;  
     overflow:hidden; word-break:break-all; }  
             </style>
-    <style>
+            <style>
 html, body  
 {  
     padding: 0;  
@@ -37,10 +37,10 @@ html, body
     z-index: 0;  
 }  
 
-    </style>
+            </style>
 
-    -->
-    <style>
+            -->
+            <style>
 
 html, body {
     height: 100%;
@@ -52,7 +52,7 @@ html, body {
     height: 100%;
 }
 
-    </style>
+            </style>
     </head>
     <body>
         <div class="jumbotron">
@@ -64,15 +64,15 @@ html, body {
         <nav class="navbar navbar-inverse navbar-fixed-top"> <!--这是导航栏, 有基本的导航和搜索, 注册, 登录, 登出等-->
             <div class="container-fluid">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="#">MoneyHouse</a>
+                    <a class="navbar-brand" href="/">MoneyHouse</a>
                 </div>
                 <ul class="nav navbar-nav">
-                    <li class="active"><a href="#">Home</a></li>
-                    <li><a href="#">上海</a></li>
-                    <li><a href="#">深圳</a></li> 
-                    <li><a href="#">论坛</a></li> 
+                    <li class="active"><a href="/">Home</a></li>
+                    <li><a href="/">上海</a></li>
+                    <li><a href="/">深圳</a></li> 
+                    <li><a href="/">论坛</a></li> 
                     <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <a href="/" class="dropdown-toggle" data-toggle="dropdown">
                             其他 
                             <b class="caret"></b>
                         </a>
@@ -95,7 +95,6 @@ html, body {
                     </li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right"> 
-                    <li><img src="static/favicons/favicon.ico" class="img-circle"></li>
                     <li><a href="register"><span class="glyphicon glyphicon-user"></span> 注册</a></li> <!--未登陆时显示-->
                     <li><a href="login"><span class="glyphicon glyphicon-log-in"></span> 登录</a></li> <!--未登录时显示-->
                     <li><a href="logout"><span class="glyphicon glyphicon-log-out"></span> 登出</a></li>  <!--已登录时显示-->
@@ -106,46 +105,51 @@ html, body {
 // 基于准备好的dom，初始化echarts实例
 var myChart = echarts.init(document.getElementById('main'));
 
-var data0 = splitData([{{range .}}
-        [{{.Date}}, {{.Open}}, {{.High}}, {{.Low}}, {{.Close}}],
+var data = splitData([{{range .Data}}
+        [{{.Date}}, {{.Open}}, {{.Close}}, {{.Low}}, {{.High}}, {{.Volume}}],
         {{end}}]);
-
 
 function splitData(rawData) {
     var categoryData = [];
-    var values = []
+    var values = [];
+    var volumns = [];
     for (var i = 0; i < rawData.length; i++) {
         categoryData.push(rawData[i].splice(0, 1)[0]);
-        values.push(rawData[i])
+        values.push(rawData[i]);
+        volumns.push(rawData[i][4]);
     }
     return {
         categoryData: categoryData,
-        values: values
+        values: values,
+        volumns: volumns
     };
 }
 
-function calculateMA(dayCount) {
+function calculateMA(dayCount, data) {
     var result = [];
-    for (var i = 0, len = data0.values.length; i < len; i++) {
+    for (var i = 0, len = data.values.length; i < len; i++) {
         if (i < dayCount) {
             result.push('-');
             continue;
         }
         var sum = 0;
         for (var j = 0; j < dayCount; j++) {
-            sum += data0.values[i - j][1];
+            sum += data.values[i - j][1];
         }
-        result.push(sum / dayCount);
+        result.push(+(sum / dayCount).toFixed(3));
     }
     return result;
 }
 
-
-
-option = {
+myChart.setOption(option = {
+    backgroundColor: '#ffffff',
     title: {
-        text: '上证指数',
-        left: 0
+        text: '{{.Name}}',
+        left: '10%'
+    },
+    animation: false,
+    legend: {
+        data: ['日K', 'MA5', 'MA10', 'MA20', 'MA30']
     },
     tooltip: {
         trigger: 'axis',
@@ -153,17 +157,40 @@ option = {
             type: 'line'
         }
     },
-    legend: {
-        data: ['忘了是', 'MA5', 'MA10', 'MA20', 'MA30']
+    toolbox: {
+        feature: {
+            dataZoom: {
+                yAxisIndex: false
+            },
+            brush: {
+                type: ['lineX', 'clear']
+            }
+        }
     },
-    grid: {
+    brush: {
+        xAxisIndex: 'all',
+        brushLink: 'all',
+        outOfBrush: {
+            colorAlpha: 0.1
+        }
+    },
+    grid: [
+    {
         left: '10%',
-        right: '10%',
-        bottom: '15%'
+        right: '8%',
+        height: '50%'
     },
-    xAxis: {
+    {
+        left: '10%',
+        right: '8%',
+        top: '63%',
+        height: '16%'
+    }
+    ],
+    xAxis: [
+    {
         type: 'category',
-        data: data0.categoryData,
+        data: data.categoryData,
         scale: true,
         boundaryGap : false,
         axisLine: {onZero: false},
@@ -172,131 +199,167 @@ option = {
         min: 'dataMin',
         max: 'dataMax'
     },
-    yAxis: {
+    {
+        type: 'category',
+        gridIndex: 1,
+        data: data.categoryData,
+        scale: true,
+        boundaryGap : false,
+        axisLine: {onZero: false},
+        axisTick: {show: false},
+        splitLine: {show: false},
+        axisLabel: {show: false},
+        splitNumber: 20,
+        min: 'dataMin',
+        max: 'dataMax'
+    }
+    ],
+    yAxis: [
+    {
         scale: true,
         splitArea: {
             show: true
         }
     },
+    {
+        scale: true,
+        gridIndex: 1,
+        splitNumber: 2,
+        axisLabel: {show: false},
+        axisLine: {show: false},
+        axisTick: {show: false},
+        splitLine: {show: false}
+    }
+    ],
     dataZoom: [
-        {
-            type: 'inside',
-            start: 50,
-            end: 100
-        },
-        {
-            show: true,
-            type: 'slider',
-            y: '90%',
-            start: 50,
-            end: 100
-        }
+    {
+        type: 'inside',
+        xAxisIndex: [0, 1],
+        start: 98,
+        end: 100
+    },
+    {
+        show: true,
+        xAxisIndex: [0, 1],
+        type: 'slider',
+        top: '85%',
+        start: 98,
+        end: 100
+    }
     ],
     series: [
-        {
-            name: 'ÈÕK',
-            type: 'candlestick',
-            data: data0.values,
-            markPoint: {
-                label: {
-                    normal: {
-                        formatter: function (param) {
-                            return param != null ? Math.round(param.value) : '';
-                        }
-                    }
-                },
-                data: [
-                    {
-                        name: 'XX±êµã',
-                        coord: ['2013/5/31', 2300],
-                        value: 2300,
-                        itemStyle: {
-                            normal: {color: 'rgb(41,60,85)'}
-                        }
-                    },
-                    {
-                        name: 'highest value',
-                        type: 'max',
-                        valueDim: 'highest'
-                    },
-                    {
-                        name: 'lowest value',
-                        type: 'min',
-                        valueDim: 'lowest'
-                    },
-                    {
-                        name: 'average value on close',
-                        type: 'average',
-                        valueDim: 'close'
-                    }
-                ],
-                tooltip: {
+    {
+        name: '日K',
+        type: 'candlestick',
+        data: data.values,
+        markPoint: {
+            label: {
+                normal: {
                     formatter: function (param) {
-                        return param.name + '<br>' + (param.data.coord || '');
+                        return param != null ? Math.round(param.value) : '';
                     }
                 }
             },
-            markLine: {
-                symbol: ['none', 'none'],
-                data: [
-                    [
-                        {
-                            name: 'from lowest to highest',
-                            type: 'min',
-                            valueDim: 'lowest',
-                            symbol: 'circle',
-                            symbolSize: 10,
-                            label: {
-                                normal: {show: false},
-                                emphasis: {show: false}
-                            }
-                        },
-                        {
-                            type: 'max',
-                            valueDim: 'highest',
-                            symbol: 'circle',
-                            symbolSize: 10,
-                            label: {
-                                normal: {show: false},
-                                emphasis: {show: false}
-                            }
-                        }
-                    ],
-                    {
-                        name: 'min line on close',
-                        type: 'min',
-                        valueDim: 'close'
-                    },
-                    {
-                        name: 'max line on close',
-                        type: 'max',
-                        valueDim: 'close'
+            data: [
+            {
+                name: 'XX标点',
+                coord: ['2015/9/31', 2300],
+                value: 2300,
+                itemStyle: {
+                    normal: {color: 'rgb(41,60,85)'}
+                }
+            },
+            {
+                name: 'highest value',
+                type: 'max',
+                valueDim: 'highest'
+            },
+                {
+                    name: 'lowest value',
+                    type: 'min',
+                    valueDim: 'lowest'
+                },
+                {
+                    name: 'average value on close',
+                    type: 'average',
+                    valueDim: 'close'
+                }
+            ],
+
+            tooltip: {
+                formatter: function (param) {
+                    var param = param[0];
+                    return [
+                        'Date: ' + param.name + '<hr size=1 style="margin: 3px 0">',
+                        'Open: ' + param.data[0] + '<br/>',
+                        'Close: ' + param.data[1] + '<br/>',
+                        'Lowest: ' + param.data[2] + '<br/>',
+                        'Highest: ' + param.data[3] + '<br/>'
+                    ].join('');
+                }
+            }
+        },
+        markLine: {
+            symbol: ['none', 'none'],
+            data: [
+                [
+                {
+                    name: 'from lowest to highest',
+                    type: 'min',
+                    valueDim: 'lowest',
+                    symbol: 'circle',
+                    symbolSize: 10,
+                    label: {
+                        normal: {show: false},
+                        emphasis: {show: false}
                     }
-                ]
-            }
-        },
-        {
-            name: 'MA5',
-            type: 'line',
-            data: calculateMA(5),
-            smooth: true,
-            lineStyle: {
-                normal: {opacity: 0.5}
-            }
-        },
-        {
-            name: 'MA10',
-            type: 'line',
-            data: calculateMA(10),
-            smooth: true,
-            lineStyle: {
-                normal: {opacity: 0.5}
-            }
-        },
+                },
+                {
+                    type: 'max',
+                    valueDim: 'highest',
+                    symbol: 'circle',
+                    symbolSize: 10,
+                    label: {
+                        normal: {show: false},
+                        emphasis: {show: false}
+                    }
+                }
+            ],
+            {
+                name: 'min line on close',
+                type: 'min',
+                valueDim: 'close'
+            },
+                {
+                    name: 'max line on close',
+                    type: 'max',
+                    valueDim: 'close'
+                }
+            ]
+        }
+    },
+    {
+        name: 'MA5',
+        type: 'line',
+        data: calculateMA(5, data),
+        smooth: true,
+        lineStyle: {
+            normal: {opacity: 0.5}
+        }
+    },
+    {
+        name: 'MA10',
+        type: 'line',
+        data: calculateMA(10, data),
+        smooth: true,
+        lineStyle: {
+            normal: {opacity: 0.5}
+        }
+    },
         {
             name: 'MA20',
             type: 'line',
-            data: calculateMA(20),
+            data: calculateMA(20, data),
             smooth: true,
             lineStyle: {
                 normal: {opacity: 0.5}
@@ -305,16 +368,32 @@ option = {
         {
             name: 'MA30',
             type: 'line',
-            data: calculateMA(30),
+            data: calculateMA(30, data),
             smooth: true,
             lineStyle: {
                 normal: {opacity: 0.5}
             }
         },
-
+            {
+                name: 'Volumn',
+                type: 'bar',
+                xAxisIndex: 1,
+                yAxisIndex: 1,
+                data: data.volumns
+            }
     ]
-};
-myChart.setOption(option);
+}, true);
+
+myChart.dispatchAction({
+    type: 'brush',
+    areas: [
+    {
+        brushType: 'lineX',
+        coordRange: ['2016-06-02', '2016-06-20'],
+        xAxisIndex: 0
+    }
+    ]
+});
         </script>
     </body>
 </html>

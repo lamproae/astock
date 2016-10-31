@@ -46,6 +46,11 @@ type StockInfo struct {
 	Adj    float64
 }
 
+type StockWebInfo struct {
+	Name string
+	Data []*StockInfo
+}
+
 var ShenZhenStartupPrefix string = "300"
 var ShenZhenMiddleLittePrefix string = "002"
 var ShenZhenMainPrefix string = "000"
@@ -141,6 +146,17 @@ func ShowStockList(w http.ResponseWriter, req *http.Request) {
 	t.Execute(w, List)
 }
 
+func MainPage(w http.ResponseWriter, req *http.Request) {
+	fmt.Println(req.URL)
+	t, err := template.ParseFiles("index.tmpl")
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
+	t.Execute(w, nil)
+}
+
 func Register(w http.ResponseWriter, req *http.Request) {
 	t, err := template.ParseFiles("register.tmpl")
 	if err != nil {
@@ -177,15 +193,15 @@ func GetStockInfo(w http.ResponseWriter, req *http.Request) {
 		log.Println(err.Error())
 		return
 	}
-	infos := DumpStockInfo(parts[len(parts)-1])
-	t.Execute(w, infos)
+	sifs := DumpStockInfo(parts[len(parts)-1])
+	t.Execute(w, sifs)
 }
 
 func Logout(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func DumpStockInfo(code string) []*StockInfo {
+func DumpStockInfo(code string) *StockWebInfo {
 	suffix, err := getStockSuffix(code)
 	if err != nil {
 		fmt.Println(err.Error)
@@ -197,7 +213,8 @@ func DumpStockInfo(code string) []*StockInfo {
 	defer rows.Close()
 	checkError(err)
 
-	var infos = make([]*StockInfo, 0, 1000)
+	var swf StockWebInfo
+	swf.Data = make([]*StockInfo, 0, 1000)
 	for rows.Next() {
 		var stock StockInfo
 		if err := rows.Scan(&stock.Date, &stock.Open, &stock.High, &stock.Low, &stock.Close, &stock.Volume, &stock.Adj); err != nil {
@@ -208,10 +225,11 @@ func DumpStockInfo(code string) []*StockInfo {
 			log.Println("Rows error: ", err.Error(), " happend")
 			continue
 		}
-		infos = append(infos, &stock)
+		swf.Data = append(swf.Data, &stock)
 	}
+	swf.Name = StockCodeNameMap[code]
 
-	return infos
+	return &swf
 }
 
 func DumpAllStock(market string) []Stock {
@@ -253,7 +271,7 @@ func main() {
 	http.HandleFunc("/login", Login)
 	http.HandleFunc("/logout", ShowStockList)
 	http.HandleFunc("/si/", GetStockInfo)
-	http.HandleFunc("/", PrintMain)
+	http.HandleFunc("/", MainPage)
 	http.ListenAndServe(":1234", nil)
 	//	DumpAllStock("shanghai")
 	//	DumpAllStock("shenzhen")
