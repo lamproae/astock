@@ -4,30 +4,16 @@
         <title>Money House</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!--
             <link rel="stylesheet" href="static/css/bootstrap.min.css">
             <script src="static/js/jquery.min.js"></script>
             <script src="static/js/bootstrap.min.js"></script>
-            -->
-
+            <!--
             <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">  
             <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
             <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-            <!--
                 <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.bootcss.com/bootstrap/3.3.6/css/bootstrap.min.css">
                 <script src="https://ajax.googleapis.bootcss.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
                 <script src="http://maxcdn.bootstrapcdn.bootcss.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-
-
-                <script>
-var _hmt = _hmt || [];
-(function() {
-    var hm = document.createElement("script");
-    hm.src = "//hm.baidu.com/hm.js?73c27e26f610eb3c9f3feb0c75b03925";
-    var s = document.getElementsByTagName("script")[0];
-    s.parentNode.insertBefore(hm, s);
-})();
-                </script>
                 -->
     </head>
     <body>
@@ -45,6 +31,7 @@ var _hmt = _hmt || [];
                     <li class="active"><a href="#">Home</a></li>
                     <li><a href="#">上海</a></li>
                     <li><a href="#">深圳</a></li> 
+                    <li><a href="#">论坛</a></li> 
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                             其他 
@@ -70,92 +57,89 @@ var _hmt = _hmt || [];
                 </ul>
                 <ul class="nav navbar-nav navbar-right"> 
                     <li><img src="static/favicons/favicon.ico" class="img-circle"></li>
-                    <li><a href="#"><span class="glyphicon glyphicon-user"></span> 注册</a></li> <!--未登陆时显示-->
-                    <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> 登录</a></li> <!--未登录时显示-->
-                    <li><a href="#"><span class="glyphicon glyphicon-log-out"></span> 登出</a></li>  <!--已登录时显示-->
+                    <li><a href="register"><span class="glyphicon glyphicon-user"></span> 注册</a></li> <!--未登陆时显示-->
+                    <li><a href="login"><span class="glyphicon glyphicon-log-in"></span> 登录</a></li> <!--未登录时显示-->
+                    <li><a href="logout"><span class="glyphicon glyphicon-log-out"></span> 登出</a></li>  <!--已登录时显示-->
                 </ul> 
             </div>
         </nav>
-        <div class="row">
-            {{ range .}}
-            <div class="col-sm-4">
-                <div class="thumbnail">
-                    <!--<img alt="300x200" src="v3/default4.jpg" />-->
-                    <div class="caption">
-                        <h3> {{ .ShortName }} : {{ .StockCode }} </h3>
-                        <p>{{ .StockCode }}</p>
-                        <p>{{ .ShortName }}</p>
-                        <p>{{ .TypeACode }}</p>
-                        <p>{{ .TypeAShortName }}</p>
-                        <p>{{ .TypeAOnSaleDate }}</p>
-                        <p>{{ .TypeATotalValue }}</p>
-                        <p>{{ .TypeACirculationValue }}</p>
-                        <p> <a class="btn" href="#">View details »</a> </p>
-                        <p>Nullam id dolor id nibh ultricies vehicula ut id elit.</p>
-                        <p>
-                        <a class="btn btn-primary" href="#">Action</a> 
-                        <a class="btn" href="#">Action</a>
-                        </p>
+        <div class="container">
+            <div class="row">
+                {{ range .}}
+                <div class="col-sm-3 col-lg-3">
+                    <div class="thumbnail">
+                        <div class="caption">
+                            <h3> {{ .ShortName }} : {{ .StockCode }} </h3>
+                            <p>股票代码: {{ .StockCode }}</p>
+                            <p>股票名称: {{ .ShortName }}</p>
+                            <p>A股代码: {{ .TypeACode }}</p>
+                            <p>A股简称: {{ .TypeAShortName }}</p>
+                            <p>A股上市日期: {{ .TypeAOnSaleDate }}</p>
+                            <p>A股总市值: {{ .TypeATotalValue }}</p>
+                            <p>A股流通股市值: {{ .TypeACirculationValue }}</p>
+                            <a class="btn btn-primary" href="/si/{{.StockCode}}">View details »</a>  <!--这里用表单提交股票代码或许更好-->
+                            </p>
+                        </div>
                     </div>
                 </div>
+                {{end}}
             </div>
-            {{end}}
         </div>
-        <!--
-            <div class="container">
-            {{range .}}
-            <div class="jumbotron">
-            <h3> {{ .ShortName }} : {{ .StockCode }} </h3>
-            <p>{{ .StockCode }}</p>
-            <p>{{ .ShortName }}</p>
-            <p>{{ .TypeACode }}</p>
-            <p>{{ .TypeAShortName }}</p>
-            <p>{{ .TypeAOnSaleDate }}</p>
-            <p>{{ .TypeATotalValue }}</p>
-            <p>{{ .TypeACirculationValue }}</p>
-            <p> <a class="btn" href="#">View details »</a> </p>
-            </div>
-            {{end}}
-            </div>
-        -->
-        <!--
-            <div class="container">
-            <div class="row clearfix">
-            {{range .}}
-            <div class="col-md-4 column">
-            <h3> {{ .ShortName }} : {{ .StockCode }} </h3>
-            <p>{{ .StockCode }}</p>
-            <p>{{ .ShortName }}</p>
-            <p>{{ .TypeACode }}</p>
-            <p>{{ .TypeAShortName }}</p>
-            <p>{{ .TypeAOnSaleDate }}</p>
-            <p>{{ .TypeATotalValue }}</p>
-            <p>{{ .TypeACirculationValue }}</p>
-            <p> <a class="btn" href="#">View details »</a> </p>
-            </div>
-            {{end}}
-            </div>
-            </div>
-        -->
-        <!--
-            <div class="container">
-            <div class="panel-group">
-            {{range .}}
-            <div class="panel panel-primary">
-            <div class="panel-heading"> {{ .ShortName }} : {{ .StockCode }}</div>
-            <div class="panel-body">
-            <p>{{ .StockCode }}</p>
-            <p>{{ .ShortName }}</p>
-            <p>{{ .TypeACode }}</p>
-            <p>{{ .TypeAShortName }}</p>
-            <p>{{ .TypeAOnSaleDate }}</p>
-            <p>{{ .TypeATotalValue }}</p>
-            <p>{{ .TypeACirculationValue }}</p>
-            </div>
-            </div>
-            {{end}}
-            </div>
-            </div>
-        -->
+                <!--
+                    <div class="container">
+                    {{range .}}
+                    <div class="jumbotron">
+                    <h3> {{ .ShortName }} : {{ .StockCode }} </h3>
+                    <p>{{ .StockCode }}</p>
+                    <p>{{ .ShortName }}</p>
+                    <p>{{ .TypeACode }}</p>
+                    <p>{{ .TypeAShortName }}</p>
+                    <p>{{ .TypeAOnSaleDate }}</p>
+                    <p>{{ .TypeATotalValue }}</p>
+                    <p>{{ .TypeACirculationValue }}</p>
+                    <p> <a class="btn" href="#">View details »</a> </p>
+                    </div>
+                    {{end}}
+                    </div>
+                -->
+                <!--
+                    <div class="container">
+                    <div class="row clearfix">
+                    {{range .}}
+                    <div class="col-md-4 column">
+                    <h3> {{ .ShortName }} : {{ .StockCode }} </h3>
+                    <p>{{ .StockCode }}</p>
+                    <p>{{ .ShortName }}</p>
+                    <p>{{ .TypeACode }}</p>
+                    <p>{{ .TypeAShortName }}</p>
+                    <p>{{ .TypeAOnSaleDate }}</p>
+                    <p>{{ .TypeATotalValue }}</p>
+                    <p>{{ .TypeACirculationValue }}</p>
+                    <p> <a class="btn" href="#">View details »</a> </p>
+                    </div>
+                    {{end}}
+                    </div>
+                    </div>
+                -->
+                <!--
+                    <div class="container">
+                    <div class="panel-group">
+                    {{range .}}
+                    <div class="panel panel-primary">
+                    <div class="panel-heading"> {{ .ShortName }} : {{ .StockCode }}</div>
+                    <div class="panel-body">
+                    <p>{{ .StockCode }}</p>
+                    <p>{{ .ShortName }}</p>
+                    <p>{{ .TypeACode }}</p>
+                    <p>{{ .TypeAShortName }}</p>
+                    <p>{{ .TypeAOnSaleDate }}</p>
+                    <p>{{ .TypeATotalValue }}</p>
+                    <p>{{ .TypeACirculationValue }}</p>
+                    </div>
+                    </div>
+                    {{end}}
+                    </div>
+                    </div>
+                -->
     </body>
 </html>

@@ -15,7 +15,9 @@ import (
 )
 
 var StockDB *sql.DB
+var StockInfoDB *sql.DB
 var StockInMemDB map[string][]Stock
+var StockCodeNameMap map[string]string
 
 type prefixError struct {
 	Code  int
@@ -30,6 +32,18 @@ type Stock struct {
 	TypeAOnSaleDate       string
 	TypeATotalValue       int64
 	TypeACirculationValue int64
+}
+
+type StockInfo struct {
+	Name   string
+	Code   string
+	Date   string
+	Open   float64
+	High   float64
+	Low    float64
+	Close  float64
+	Volume uint64
+	Adj    float64
 }
 
 var ShenZhenStartupPrefix string = "300"
@@ -96,6 +110,18 @@ func GetJS(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func GetCSS(w http.ResponseWriter, req *http.Request) {
+	fmt.Println(req.Method)
+	fmt.Println(req.URL)
+	fmt.Println(req.Proto)
+	if strings.Contains(fmt.Sprintf("%v", req.URL), ".css") {
+		w.Header().Set("Content-Type", "text/css")
+		t, err := tt.ParseFiles(fmt.Sprintf("./%v", req.URL))
+		checkError(err)
+		t.Execute(w, nil)
+	}
+}
+
 func PrintMain(w http.ResponseWriter, req *http.Request) {
 	fmt.Println(req.URL)
 	t, err := tt.ParseFiles(fmt.Sprintf(".%v", req.URL))
@@ -113,6 +139,79 @@ func ShowStockList(w http.ResponseWriter, req *http.Request) {
 
 	List, _ := StockInMemDB["shanghai"]
 	t.Execute(w, List)
+}
+
+func Register(w http.ResponseWriter, req *http.Request) {
+	t, err := template.ParseFiles("register.tmpl")
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	t.Execute(w, nil)
+}
+
+func Login(w http.ResponseWriter, req *http.Request) {
+	t, err := template.ParseFiles("login.tmpl")
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	t.Execute(w, nil)
+}
+
+func GetStockInfo(w http.ResponseWriter, req *http.Request) {
+	fmt.Println(req.URL)
+	url := fmt.Sprintf("%v", req.URL)
+	parts := strings.Split(url, "/")
+	fmt.Println(parts)
+	fmt.Println(len(parts))
+
+	//Routing problem :(, more check
+	if len(parts) != 3 {
+		//not found
+		return
+	}
+
+	t, err := template.ParseFiles("stockinfo.tmpl")
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	infos := DumpStockInfo(parts[len(parts)-1])
+	t.Execute(w, infos)
+}
+
+func Logout(w http.ResponseWriter, req *http.Request) {
+
+}
+
+func DumpStockInfo(code string) []*StockInfo {
+	suffix, err := getStockSuffix(code)
+	if err != nil {
+		fmt.Println(err.Error)
+		//return errors.New("Invalid code")
+	}
+
+	table := suffix + code
+	rows, err := StockInfoDB.Query("select * from " + table)
+	defer rows.Close()
+	checkError(err)
+
+	var infos = make([]*StockInfo, 0, 1000)
+	for rows.Next() {
+		var stock StockInfo
+		if err := rows.Scan(&stock.Date, &stock.Open, &stock.High, &stock.Low, &stock.Close, &stock.Volume, &stock.Adj); err != nil {
+			log.Println("Get stock information for ", code, " error with: ", err.Error())
+			continue
+		}
+		if err := rows.Err(); err != nil {
+			log.Println("Rows error: ", err.Error(), " happend")
+			continue
+		}
+		infos = append(infos, &stock)
+	}
+
+	return infos
 }
 
 func DumpAllStock(market string) []Stock {
@@ -137,6 +236,7 @@ func DumpAllStock(market string) []Stock {
 			continue
 		}
 		stockList = append(stockList, stock)
+		StockCodeNameMap[stock.StockCode] = stock.ShortName
 	}
 
 	return stockList
@@ -144,11 +244,15 @@ func DumpAllStock(market string) []Stock {
 
 func main() {
 	http.HandleFunc("/test", PrintTest)
-	http.HandleFunc("/static/css/", GetStatic)
+	http.HandleFunc("/static/css/", GetCSS)
 	http.HandleFunc("/static/js/", GetJS)
 	http.HandleFunc("/static/fonts", GetStatic)
 	http.HandleFunc("/static/favicons", GetStatic)
 	http.HandleFunc("/stock", ShowStockList)
+	http.HandleFunc("/register", Register)
+	http.HandleFunc("/login", Login)
+	http.HandleFunc("/logout", ShowStockList)
+	http.HandleFunc("/si/", GetStockInfo)
 	http.HandleFunc("/", PrintMain)
 	http.ListenAndServe(":1234", nil)
 	//	DumpAllStock("shanghai")
@@ -157,7 +261,9 @@ func main() {
 
 func init() {
 	StockDB, _ = sql.Open("mysql", "kkkmmu:leeweop@/stock?charset=utf8")
+	StockInfoDB, _ = sql.Open("mysql", "kkkmmu:leeweop@/stockinfo?charset=utf8")
 	StockInMemDB = make(map[string][]Stock, 2)
+	StockCodeNameMap = make(map[string]string, 10000)
 	StockInMemDB["shenzhen"] = DumpAllStock("shenzhen")
 	StockInMemDB["shanghai"] = DumpAllStock("shanghai")
 }
