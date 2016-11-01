@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>forum</title>
+
+  <!-- include jquery -->
+  <script src="/static/js/jquery.min.js"></script> 
+
+  <!-- include libs stylesheets -->
+  <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+  <script src="/static/js/bootstrap.min.js"></script>
+
+  <!-- include summernote -->
+  <script type="text/javascript" src="/static/js/summernote.js"></script>
+  <link rel="stylesheet" href="//cdn.bootcss.com/summernote/0.8.2/summernote.css">
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $('.summernote').summernote({
+        height: 300,
+        tabsize: 2
+      });
+      $('form').on('submit', function (e) {
+        e.preventDefault();
+        alert($('.summernote').summernote('code'));
+        alert($('.summernote').val());
+      });
+    });
+  </script>
+</head>
+<body>
+<div class="container">
+    <form action="#" novalidate>
+        <div class="form-group">
+            <label for="input">Text</label>
+            <input type="text" class="form-input" id="input" value="Title">
+        </div>
+
+        <div class="form-group">
+            <label for="contents">Contents</label>
+            <textarea name="text" class="summernote" id="contents" title="Contents"></textarea>
+        </div>
+        <button type="submit" class="btn btn-default">submit</button>
+    </form>
+</div>
+</body>
+</html>

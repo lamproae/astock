@@ -127,6 +127,22 @@ func GetCSS(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func GetFonts(w http.ResponseWriter, req *http.Request) {
+	fmt.Println(req.Method)
+	fmt.Println(req.URL)
+	fmt.Println(req.Proto)
+	if strings.Contains(fmt.Sprintf("%v", req.URL), ".css") {
+		if strings.Contains(fmt.Sprintf("%v", req.URL), ".svg") {
+			w.Header().Set("Content-Type", "image/svg+xmz")
+		} else if strings.Contains(fmt.Sprintf("%v", req.URL), ".woff") {
+			w.Header().Set("Content-Type", "application/x-font-woff")
+		}
+		t, err := tt.ParseFiles(fmt.Sprintf("./%v", req.URL))
+		checkError(err)
+		t.Execute(w, nil)
+	}
+}
+
 func PrintMain(w http.ResponseWriter, req *http.Request) {
 	fmt.Println(req.URL)
 	t, err := tt.ParseFiles(fmt.Sprintf(".%v", req.URL))
@@ -168,6 +184,15 @@ func Register(w http.ResponseWriter, req *http.Request) {
 
 func Login(w http.ResponseWriter, req *http.Request) {
 	t, err := template.ParseFiles("login.tmpl")
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	t.Execute(w, nil)
+}
+
+func ShowForum(w http.ResponseWriter, req *http.Request) {
+	t, err := template.ParseFiles("forum.tmpl")
 	if err != nil {
 		log.Println(err.Error())
 		return
@@ -264,13 +289,14 @@ func main() {
 	http.HandleFunc("/test", PrintTest)
 	http.HandleFunc("/static/css/", GetCSS)
 	http.HandleFunc("/static/js/", GetJS)
-	http.HandleFunc("/static/fonts", GetStatic)
+	http.HandleFunc("/static/fonts", GetFonts)
 	http.HandleFunc("/static/favicons", GetStatic)
 	http.HandleFunc("/stock", ShowStockList)
 	http.HandleFunc("/register", Register)
 	http.HandleFunc("/login", Login)
 	http.HandleFunc("/logout", ShowStockList)
 	http.HandleFunc("/si/", GetStockInfo)
+	http.HandleFunc("/forum", ShowForum)
 	http.HandleFunc("/", MainPage)
 	http.ListenAndServe(":1234", nil)
 	//	DumpAllStock("shanghai")
