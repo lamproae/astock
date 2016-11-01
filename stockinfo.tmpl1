@@ -4,7 +4,7 @@
         <title>Money House</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/static/css/bootstrap.min.css">
         <script src="/static/js/jquery.min.js"></script>
         <script src="/static/js/bootstrap.min.js"></script>
         <script src="/static/js/echarts.min.js"></script>
@@ -40,22 +40,26 @@ html, body
             </style>
 
             -->
+            <style>
+
+html, body {
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    overflow:hidden;  
+}
+.jumbotron {
+    height: 100%;
+}
+
+            </style>
     </head>
     <body>
         <div class="jumbotron">
             <h1 class="text-center">Money House</h1>
             <p class = "text-center">Resize this responsive page to see the effect!</p> 
+            <div id="main" style="width:100%; height:100%"></div>
         </div>
-       <div class="container">
-            <div class="row">
-                <div class="col-lg-8" style="position: relative; left: 30px; right: 30px; top: 50px; bottom: 50px;">
-                    <div class="panel-body">
-                        <div id="main" style="height: 768px; width: 1280px"></div>
-                    </div>
-                </div>
-            </div>
-       </div>
-  
 
         <nav class="navbar navbar-inverse navbar-fixed-top"> <!--这是导航栏, 有基本的导航和搜索, 注册, 登录, 登出等-->
             <div class="container-fluid">
@@ -98,7 +102,6 @@ html, body
             </div>
         </nav>
         <script type="text/javascript">
-
 // 基于准备好的dom，初始化echarts实例
 var myChart = echarts.init(document.getElementById('main'));
 
