@@ -163,7 +163,16 @@ func ShowStockList(w http.ResponseWriter, req *http.Request) {
 }
 
 func MainPage(w http.ResponseWriter, req *http.Request) {
+	fmt.Println(req.Method)
 	fmt.Println(req.URL)
+	fmt.Println(req.Proto)
+	req.ParseForm()
+	if len(req.Form) > 0 {
+		for k, v := range req.Form {
+			log.Println("------", k, "-------", v)
+		}
+	}
+
 	t, err := template.ParseFiles("index.tmpl")
 	if err != nil {
 		log.Println(err.Error())
@@ -183,6 +192,15 @@ func Register(w http.ResponseWriter, req *http.Request) {
 }
 
 func Login(w http.ResponseWriter, req *http.Request) {
+	fmt.Println(req.Method)
+	fmt.Println(req.URL)
+	fmt.Println(req.Proto)
+	req.ParseForm()
+	if len(req.Form) > 0 {
+		for k, v := range req.Form {
+			log.Println("------", k, "-------", v)
+		}
+	}
 	t, err := template.ParseFiles("login.tmpl")
 	if err != nil {
 		log.Println(err.Error())
@@ -193,6 +211,15 @@ func Login(w http.ResponseWriter, req *http.Request) {
 
 func ShowForum(w http.ResponseWriter, req *http.Request) {
 	t, err := template.ParseFiles("forum.tmpl")
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	t.Execute(w, nil)
+}
+
+func ShowForm(w http.ResponseWriter, req *http.Request) {
+	t, err := template.ParseFiles("form.tmpl")
 	if err != nil {
 		log.Println(err.Error())
 		return
@@ -297,6 +324,7 @@ func main() {
 	http.HandleFunc("/logout", ShowStockList)
 	http.HandleFunc("/si/", GetStockInfo)
 	http.HandleFunc("/forum", ShowForum)
+	http.HandleFunc("/form", ShowForm)
 	http.HandleFunc("/", MainPage)
 	http.ListenAndServe(":1234", nil)
 	//	DumpAllStock("shanghai")
